@@ -1,0 +1,21 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - yum install -y python3 zip git make tar
+      - pip3 install psycopg2-binary -t src/python
+      - curl -L https://git.io/n-install | bash -s -- -y
+      - PATH=$PATH:$HOME/n/bin npm install -g serverless
+  build:
+    commands:
+      - build.sh
+      - (cd deploy/infrastructure; PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
+      - (cd deploy/psycopg2;       PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
+      - (cd deploy/api;            PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: no
+cache:
+  paths:
+    - '/root/.ivy2/cache/**/*'

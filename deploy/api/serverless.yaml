@@ -1,0 +1,23 @@
+service: sample-api
+
+provider:
+  name: aws
+  runtime: python3.7
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": "sample-apigateway"
+    restApiRootResourceId:
+      "Fn::ImportValue": "sample-apigateway-root-id"
+
+package:
+  artifact: ../../target/api.zip
+
+functions:
+  sample-api:
+    handler: hello.lambda_handler
+      - arn:aws:lambda:ap-northeast-1:XXXXXXXXXXXX:layer:infra:1
+    events:
+      - http:
+          path: sample
+          method: post
+

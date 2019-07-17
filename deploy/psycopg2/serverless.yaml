@@ -1,0 +1,9 @@
+service: sample-api-psycopg2
+
+provider:
+  name: aws
+
+layers:
+  psycopg2:
+    package:
+      artifact: ../../target/psycopg2.zip

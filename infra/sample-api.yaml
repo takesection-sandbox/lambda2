@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: sample-vpc
+  apiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: "A sample API"
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      Name: "SampleAPI"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Deny"
+            Principal: "*"
+            Action: "execute-api:Invoke"
+            Resource: "execute-api:/*/https/*"
+            Condition:
+              StringNotEquals:
+                "aws.sourceVpc": !Ref vpc
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "execute-api:Invoke"
+            Resource: "execute-api:/*/https/*"
+Outputs:
+  apiGateway:
+    Value: !Ref apiGateway
+    Export:
+      Name: sample-apigateway
+  RootResourceId:
+    Value:
+      Fn::GetAtt:
+        - apiGateway
+        - RootResourceId
+    Export:
+      Name: sample-apigateway-root-id

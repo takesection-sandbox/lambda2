@@ -1,0 +1,9 @@
+service: sample-api-layer
+
+provider:
+  name: aws
+
+layers:
+  infra:
+    package:
+      artifact: ../../target/infrastructure.zip
