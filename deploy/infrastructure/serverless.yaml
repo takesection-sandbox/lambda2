@@ -7,3 +7,11 @@ layers:
   infra:
     package:
       artifact: ../../target/infrastructure.zip
+
+resources:
+  Outputs:
+    InfraLambdaLayerQualifiedArn:
+      Value:
+        "Ref": InfraLambdaLayer
+      Export:
+        Name: sample-lambda-layer-infra

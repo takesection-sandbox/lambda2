@@ -15,7 +15,8 @@ package:
 functions:
   sample-api:
     handler: hello.lambda_handler
-      - arn:aws:lambda:ap-northeast-1:XXXXXXXXXXXX:layer:infra:1
+    layers:
+      - "Fn::ImportValue": "sample-lambda-layer-infra"
     events:
       - http:
           path: sample
