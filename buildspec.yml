@@ -9,9 +9,9 @@ phases:
   build:
     commands:
       - build.sh
-      - (cd deploy/infrastructure; PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
-      - (cd deploy/psycopg2;       PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
-      - (cd deploy/api;            PATH=$PATH:$HOME/n/bin sls -s test -r ap-northeast-1 deploy -v)
+      - (cd deploy/infrastructure; PATH=$PATH:$HOME/n/bin sls -s ${STAGE} -r ap-northeast-1 deploy -v)
+      - (cd deploy/psycopg2;       PATH=$PATH:$HOME/n/bin sls -s ${STAGE} -r ap-northeast-1 deploy -v)
+      - (cd deploy/api;            PATH=$PATH:$HOME/n/bin sls -s ${STAGE} -r ap-northeast-1 deploy -v)
 artifacts:
   files:
     - '**/*'
