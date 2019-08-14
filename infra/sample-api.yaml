@@ -1,5 +1,37 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
+  lambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      RoleName: "sample-lambda-role"
+  lambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "ec2:*"
+              - "s3:*"
+              - "sqs:*"
+              - "lambda:*"
+              - "xray:*"
+              - "logs:*"
+            Resource: "*"
+      PolicyName: "sample-lambda-policy"
+      Roles:
+        - !Ref lambdaRole
   vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -7,6 +39,56 @@ Resources:
       Tags:
         - Key: Name
           Value: sample-vpc
+  sqsVpcEndPoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref vpc
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: '*'
+            Action:
+              - "sqs:*"
+            Resource: "*"
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .sqs
+      VpcEndpointType: Interface
+  s3VpcEndPoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref vpc
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: '*'
+            Action:
+              - "s3:*"
+            Resource: "*"
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .s3
+  securityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'sample'
+      VpcId: !Ref vpc
+  subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.64.0/20
+      VpcId: !Ref vpc
+  subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.128.0/20
+      VpcId: !Ref vpc
   apiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -30,6 +112,13 @@ Resources:
             Action: "execute-api:Invoke"
             Resource: "execute-api:/*/https/*"
 Outputs:
+  LambdaRole:
+    Value:
+      Fn::GetAtt:
+        - lambdaRole
+        - Arn
+    Export:
+      Name: sample-lambda-role
   apiGateway:
     Value: !Ref apiGateway
     Export:
@@ -41,3 +130,15 @@ Outputs:
         - RootResourceId
     Export:
       Name: sample-apigateway-root-id
+  SecurityGroup:
+    Value: !Ref securityGroup
+    Export:
+      Name: sample-security-group
+  Subnet1:
+    Value: !Ref subnet1
+    Export:
+      Name: sample-subnet1
+  Subnet2:
+    Value: !Ref subnet2
+    Export:
+      Name: sample-subnet2
