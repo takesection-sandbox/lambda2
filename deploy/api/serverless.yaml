@@ -1,24 +1,55 @@
 service: sample-api
 
+custom:
+  restapi_id:
+    "Fn::ImportValue": "sample-apigateway"
+  restapi_root_resourceid:
+    "Fn::ImportValue": "sample-apigateway-root-id"
+  infra_layer:
+    "Fn::ImportValue": "sample-lambda-layer-infra"
+  psycopg2_layer:
+    "Fn::ImportValue": "sample-lambda-layer-psycopg2"
+  role:
+    "Fn::ImportValue": "sample-lambda-role"
+  security_group:
+    "Fn::ImportValue": "sample-security-group"
+  subnet1:
+    "Fn::ImportValue": "sample-subnet1"
+  subnet2:
+    "Fn::ImportValue": "sample-subnet2"
+  db_endpoint:
+    "Fn::ImportValue": "sample-rds-endpoint"
+  db_readonly_endpoint:
+    "Fn::ImportValue": "sample-rds-readonly-endpoint"
+
 provider:
   name: aws
   runtime: python3.7
   apiGateway:
-    restApiId:
-      "Fn::ImportValue": "sample-apigateway"
-    restApiRootResourceId:
-      "Fn::ImportValue": "sample-apigateway-root-id"
+    restApiId: ${self:custom.restapi_id}
+    restApiRootResourceId: ${self:custom.restapi_root_resourceid}
+  role: ${self:custom.role}
+  vpc:
+    securityGroupIds:
+      - ${self:custom.security_group}
+    subnetIds:
+      - ${self:custom.subnet1}
+      - ${self:custom.subnet2}
+  environment:
+    DB_ENDPOINT: ${self:custom.db_endpoint}
+    DB_READONLY_ENDPOINT: ${self:custom.db_readonly_endpoint}
 
 package:
   artifact: ../../target/api.zip
 
 functions:
-  sample-api:
-    handler: hello.lambda_handler
+  create:
+    handler: create.lambda_handler
     layers:
-      - "Fn::ImportValue": "sample-lambda-layer-infra"
+      - ${self:custom.infra_layer}
+      - ${self:custom.psycopg2_layer}
     events:
       - http:
-          path: sample
+          path: create
           method: post
 

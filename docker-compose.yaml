@@ -1,0 +1,17 @@
+version: "2.4"
+services:
+  postgresql:
+    image: postgres:9.6.11-alpine
+    environment:
+      POSTGRES_PASSWORD: test1234
+      POSTGRES_USER: test
+    ports:
+      - 5432:5432
+  flyway:
+    image: boxfuse/flyway:latest-alpine
+    command: -url=jdbc:postgresql://postgresql:5432/test -user=test -password=test1234 -connectRetries=60 migrate
+    volumes:
+      - ./flyway/drivers:/flyway/drivers
+      - ./flyway/sql:/flyway/sql
+    depends_on:
+      - postgresql

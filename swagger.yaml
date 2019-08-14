@@ -6,11 +6,11 @@ info:
 schemes:
   - https
 paths:
-  /sample/api/start:
+  /create:
     post:
       summary: ""
       description: ""
-      operationId: "start"
+      operationId: "create"
       consumes:
         - application/json
       produces:
@@ -20,13 +20,15 @@ paths:
           in: "body"
           description: ""
           schema:
-            $ref: "#/definitions/StartRequest"
+            $ref: "#/definitions/CreateRequest"
       responses:
         200:
           description: OK
 definitions:
-  StartRequest:
-    type: "object"
+  CreateRequest:
+    type: object
     properties:
       id:
-        type: "string"
+        type: number
+      name:
+        type: string

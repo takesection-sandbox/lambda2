@@ -7,3 +7,9 @@ layers:
   psycopg2:
     package:
       artifact: ../../target/psycopg2.zip
+
+resources:
+  Outputs:
+    Psycopg2LambdaLayerQualifiedArn:
+      Export:
+        Name: sample-lambda-layer-psycopg2

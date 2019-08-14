@@ -3,4 +3,4 @@ target/
 .serverless/
 .terraform/
 terraform.*
-/src/python/psycopg2/
+/src/python/psycopg2*
