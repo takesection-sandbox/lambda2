@@ -89,6 +89,7 @@ Resources:
   s3:
     Type: AWS::S3::Bucket
     Properties:
+      DeletionPolicy: Retain
       Tags:
         - Key: Name
           Value: sample-bucket
