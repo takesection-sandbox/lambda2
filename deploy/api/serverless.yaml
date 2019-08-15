@@ -21,10 +21,16 @@ custom:
     "Fn::ImportValue": "sample-rds-endpoint"
   db_readonly_endpoint:
     "Fn::ImportValue": "sample-rds-readonly-endpoint"
+  sqs_endpoint: "sqs.${opt:region}.amazonaws.com"
+  queue_name:
+    "Fn::ImportValue": "sample-queue"
+  bucket_name:
+    "Fn::ImportValue": "sample-bucket"
 
 provider:
   name: aws
   runtime: python3.7
+  timeout: 30
   apiGateway:
     restApiId: ${self:custom.restapi_id}
     restApiRootResourceId: ${self:custom.restapi_root_resourceid}
@@ -38,6 +44,9 @@ provider:
   environment:
     DB_ENDPOINT: ${self:custom.db_endpoint}
     DB_READONLY_ENDPOINT: ${self:custom.db_readonly_endpoint}
+    SQS_ENDPOINT: ${self:custom.sqs_endpoint}
+    QUEUE_NAME: ${self:custom.queue_name}
+    BUCKET_NAME: ${self:custom.bucket_name}
 
 package:
   artifact: ../../target/api.zip
@@ -52,4 +61,19 @@ functions:
       - http:
           path: create
           method: post
-
+  publish:
+    handler: publish.lambda_handler
+    layers:
+      - ${self:custom.infra_layer}
+    events:
+      - http:
+          path: publish
+          method: post
+  read:
+    handler: read.lambda_handler
+    layers:
+      - ${self:custom.infra_layer}
+    events:
+      - http:
+          path: read
+          method: post

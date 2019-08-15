@@ -1,9 +1,9 @@
 import json
-import infrastructure.sample_command
+import infrastructure.sample_publish
 
 def lambda_handler(event, context):
-    req = json.loads(event['body'])
-    infrastructure.sample_command.create(req['id'], req['name'])
+    message = event['body']
+    infrastructure.sample_publish.publish(message)
     body = {}
     return {
         "statusCode": 200,

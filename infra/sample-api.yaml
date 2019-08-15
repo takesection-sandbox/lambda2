@@ -36,21 +36,76 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
       Tags:
         - Key: Name
           Value: sample-vpc
+  securityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'sample'
+      VpcId: !Ref vpc
+  securityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref securityGroup
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref securityGroup
+  routeTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: sample-routetable
+  subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.64.0/20
+      VpcId: !Ref vpc
+  subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.128.0/20
+      VpcId: !Ref vpc
+  subnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref subnet1
+      RouteTableId: !Ref routeTable
+  subnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref subnet2
+      RouteTableId: !Ref routeTable
+  s3:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: Name
+          Value: sample-bucket
+  sqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: sample
   sqsVpcEndPoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcId: !Ref vpc
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal: '*'
-            Action:
-              - "sqs:*"
-            Resource: "*"
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref subnet1
+        - !Ref subnet2
+      SecurityGroupIds:
+        - !Ref securityGroup
       ServiceName: !Join
         - ''
         - - com.amazonaws.
@@ -61,34 +116,13 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       VpcId: !Ref vpc
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal: '*'
-            Action:
-              - "s3:*"
-            Resource: "*"
+      RouteTableIds:
+        - !Ref routeTable
       ServiceName: !Join
         - ''
         - - com.amazonaws.
           - !Ref 'AWS::Region'
           - .s3
-  securityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: 'sample'
-      VpcId: !Ref vpc
-  subnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: 10.0.64.0/20
-      VpcId: !Ref vpc
-  subnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: 10.0.128.0/20
-      VpcId: !Ref vpc
   apiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -111,6 +145,23 @@ Resources:
             Principal: "*"
             Action: "execute-api:Invoke"
             Resource: "execute-api:/*/https/*"
+  dbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB Subnet Group
+      SubnetIds:
+        - !Ref subnet1
+        - !Ref subnet2
+  rdsCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      DBClusterParameterGroupName: default.aurora-postgresql9.6
+      Engine: aurora-postgresql
+      EngineVersion: 9.6.12
+      MasterUsername: test
+      MasterUserPassword: test1234
+      Port: 5432
+      DBSubnetGroupName: !Ref dbSubnetGroup
 Outputs:
   LambdaRole:
     Value:
@@ -142,3 +193,28 @@ Outputs:
     Value: !Ref subnet2
     Export:
       Name: sample-subnet2
+  Sqs:
+    Value:
+      Fn::GetAtt:
+        - sqs
+        - QueueName
+    Export:
+      Name: sample-queue
+  RdsEndpoint:
+    Value:
+      Fn::GetAtt:
+        - rdsCluster
+        - Endpoint.Address
+    Export:
+      Name: sample-rds-endpoint
+  RdsReadonlyEndpoint:
+    Value:
+      Fn::GetAtt:
+        - rdsCluster
+        - ReadEndpoint.Address
+    Export:
+      Name: sample-rds-readonly-endpoint
+  S3:
+    Value: !Ref s3
+    Export:
+      Name: sample-bucket

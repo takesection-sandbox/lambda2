@@ -1,10 +1,9 @@
 import json
-import infrastructure.sample_command
+import infrastructure.sample_read
 
 def lambda_handler(event, context):
     req = json.loads(event['body'])
-    infrastructure.sample_command.create(req['id'], req['name'])
-    body = {}
+    body = infrastructure.sample_read.read(req['key'])
     return {
         "statusCode": 200,
         "body": json.dumps(body)

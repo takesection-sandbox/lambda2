@@ -7,6 +7,7 @@ layers:
   psycopg2:
     package:
       artifact: ../../target/psycopg2.zip
+    retain: false
 
 resources:
   Outputs:
