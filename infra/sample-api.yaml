@@ -151,17 +151,13 @@ Resources:
       Policy:
         Version: "2012-10-17"
         Statement:
-          - Effect: "Deny"
-            Principal: "*"
-            Action: "execute-api:Invoke"
-            Resource: "execute-api:/*/https/*"
-            Condition:
-              StringNotEquals:
-                "aws.sourceVpc": !Ref vpc
           - Effect: "Allow"
             Principal: "*"
             Action: "execute-api:Invoke"
-            Resource: "execute-api:/*/https/*"
+            Resource: "arn:aws:execute-api:*:*:*"
+            Condition:
+              StringEquals:
+                aws:SourceVpce: !Ref apiGatewayVpcEndPoint
   dbSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
