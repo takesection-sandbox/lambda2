@@ -113,6 +113,22 @@ Resources:
           - !Ref 'AWS::Region'
           - .sqs
       VpcEndpointType: Interface
+  apiGatewayVpcEndPoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref vpc
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref subnet1
+        - !Ref subnet2
+      SecurityGroupIds:
+        - !Ref securityGroup
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref AWS::Region
+          - .execute-api
+      VpcEndpointType: Interface
   s3VpcEndPoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
